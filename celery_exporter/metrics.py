@@ -16,3 +16,8 @@ LATENCY = prometheus_client.Histogram(
 WORKERS = prometheus_client.Gauge(
     "celery_workers", "Number of alive workers", ["namespace"]
 )
+
+QUEUE_LENGTH = prometheus_client.Gauge(
+    'celery_queue_length', 'Number of tasks in the queue.',
+    ['queue_name']
+)

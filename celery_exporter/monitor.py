@@ -7,10 +7,11 @@ import threading
 import celery
 import celery.states
 
-from .metrics import TASKS, TASKS_RUNTIME, LATENCY, WORKERS
-from celery_state import CeleryState
+from .metrics import TASKS, TASKS_RUNTIME, LATENCY, WORKERS, QUEUE_LENGTH
+from celery.events.state import State
+from celery.utils.objects import FallbackContext
 from .utils import get_config
-
+import amqp
 
 class TaskThread(threading.Thread):
     """
@@ -22,7 +23,7 @@ class TaskThread(threading.Thread):
         self._app = app
         self._namespace = namespace
         self.log = logging.getLogger("task-thread")
-        self._state = CeleryState(max_tasks_in_memory=max_tasks_in_memory)
+        self._state = State(max_tasks_in_memory=max_tasks_in_memory)
         self._known_states = set()
         self._known_states_names = set()
         self._tasks_started = dict()
@@ -126,3 +127,34 @@ def setup_metrics(app, namespace):
             LATENCY.labels(namespace=namespace, name=task, queue=queue)
             for state in celery.states.ALL_STATES:
                 TASKS.labels(namespace=namespace, name=task, state=state, queue=queue)
+
+class QueueLengthMonitoringThread(threading.Thread):
+    periodicity_seconds = 30
+
+    def __init__(self, app, queue_list):
+        self.celery_app = app
+        self.queue_list = queue_list
+        self.connection = self.celery_app.connection_or_acquire()
+
+        if isinstance(self.connection, FallbackContext):
+            self.connection = self.connection.fallback()
+
+        super(QueueLengthMonitoringThread, self).__init__()
+
+    def measure_queues_length(self):
+        for queue in self.queue_list:
+            try:
+                length = self.connection.default_channel.queue_declare(queue=queue, passive=True).message_count
+            except (amqp.exceptions.ChannelError,) as e:
+                logging.warning("Queue Not Found: {}. Setting its value to zero. Error: {}".format(queue, str(e)))
+                length = 0
+
+            self.set_queue_length(queue, length)
+
+    def set_queue_length(self, queue, length):
+        QUEUE_LENGTH.labels(queue).set(length)
+
+    def run(self):  # pragma: no cover
+        while True:
+            self.measure_queues_length()
+            time.sleep(self.periodicity_seconds)
