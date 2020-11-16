@@ -110,24 +110,6 @@ class EnableEventsThread(threading.Thread):
         self._app.control.enable_events()
 
 
-def setup_metrics(app, namespace):
-    """
-    This initializes the available metrics with default values so that
-    even before the first event is received, data can be exposed.
-    """
-    WORKERS.labels(namespace=namespace)
-    config = get_config(app)
-
-    if not config:  # pragma: no cover
-        for metric in TASKS.collect():
-            for name, labels, cnt, timestamp, exemplar in metric.samples:
-                TASKS.labels(**labels)
-    else:
-        for task, queue in config.items():
-            LATENCY.labels(namespace=namespace, name=task, queue=queue)
-            for state in celery.states.ALL_STATES:
-                TASKS.labels(namespace=namespace, name=task, state=state, queue=queue)
-
 class QueueLengthMonitoringThread(threading.Thread):
     periodicity_seconds = 30
 
@@ -158,3 +140,22 @@ class QueueLengthMonitoringThread(threading.Thread):
         while True:
             self.measure_queues_length()
             time.sleep(self.periodicity_seconds)
+
+def setup_metrics(app, namespace):
+    """
+    This initializes the available metrics with default values so that
+    even before the first event is received, data can be exposed.
+    """
+    WORKERS.labels(namespace=namespace)
+    config = get_config(app)
+
+    if not config:  # pragma: no cover
+        for metric in TASKS.collect():
+            for name, labels, cnt, timestamp, exemplar in metric.samples:
+                TASKS.labels(**labels)
+    else:
+        for task, queue in config.items():
+            LATENCY.labels(namespace=namespace, name=task, queue=queue)
+            for state in celery.states.ALL_STATES:
+                TASKS.labels(namespace=namespace, name=task, state=state, queue=queue)
+
