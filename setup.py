@@ -7,6 +7,13 @@ long_description = "See https://github.com/OvalMoney/celery-exporter"
 with io.open("README.md", encoding="utf-8") as fp:
     long_description = fp.read()
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
+with open('requirements/requirements.txt', 'r') as f:
+    required = f.read().splitlines()
+
+
 setup(
     name="celery-exporter",
     description="Prometheus metrics exporter for Celery",
