@@ -5,6 +5,7 @@ from .monitor import (
     TaskThread,
     WorkerMonitoringThread,
     EnableEventsThread,
+    QueueLengthMonitoringThread,
     setup_metrics,
 )
 
@@ -51,6 +52,10 @@ class CeleryExporter:
             e = EnableEventsThread(app=self._app)
             e.daemon = True
             e.start()
+
+        q = QueueLengthMonitoringThread(app=self._app, queue_list=['process', 'default', 'celery'])
+        q.daemon = True
+        q.start()
 
     def _start_httpd(self):  # pragma: no cover
         """
