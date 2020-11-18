@@ -10,10 +10,6 @@ with io.open("README.md", encoding="utf-8") as fp:
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open('requirements/requirements.txt', 'r') as f:
-    required = f.read().splitlines()
-
-
 setup(
     name="celery-exporter",
     description="Prometheus metrics exporter for Celery",
