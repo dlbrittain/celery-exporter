@@ -28,16 +28,15 @@ class TaskThread(threading.Thread):
         self._known_states_names = set()
         self._tasks_started = dict()
         super(TaskThread, self).__init__(*args, **kwargs)
-
     def run(self):  # pragma: no cover
         self._monitor()
 
     def _process_event(self, evt):
-        (name, queue, latency) = self._state.latency(evt)
-        if latency is not None:
-            LATENCY.labels(namespace=self._namespace, name=name, queue=queue).observe(
-                latency
-            )
+        # (name, queue, latency) = self._state.latency(evt)
+        # if latency is not None:
+        #     LATENCY.labels(namespace=self._namespace, name=name, queue=queue).observe(
+        #         latency
+        #     )
         (name, state, runtime, queue) = self._state.collect(evt)
 
         if name is not None:
