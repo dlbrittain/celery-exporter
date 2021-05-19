@@ -7,7 +7,7 @@ import threading
 import celery
 import celery.states
 
-from .metrics import TASKS, TASKS_RUNTIME, LATENCY, WORKERS, QUEUE_LENGTH
+from .metrics import TASKS, TASKS_RUNTIME, WORKERS, QUEUE_LENGTH
 from celery.events.state import State
 from celery.utils.objects import FallbackContext
 from .utils import get_config
@@ -154,7 +154,7 @@ def setup_metrics(app, namespace):
                 TASKS.labels(**labels)
     else:
         for task, queue in config.items():
-            LATENCY.labels(namespace=namespace, name=task, queue=queue)
+            # LATENCY.labels(namespace=namespace, name=task, queue=queue)
             for state in celery.states.ALL_STATES:
                 TASKS.labels(namespace=namespace, name=task, state=state, queue=queue)
 
