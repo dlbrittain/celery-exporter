@@ -43,6 +43,8 @@ RUN apk add --no-cache alpine-sdk bash && \
 
 COPY Cargo.toml Cargo.lock setup.py README.md ./
 COPY src/ ./src
+COPY requirements ./requirements/
+RUN pip install -r ./requirements/requirements.txt
 COPY celery_exporter/  ./celery_exporter/
 
 RUN pip wheel . -w /src/wheelhouse
