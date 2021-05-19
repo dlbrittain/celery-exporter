@@ -69,7 +69,7 @@ LOG_FORMAT = "[%(asctime)s] %(name)s:%(levelname)s: %(message)s"
     "--verbose", is_flag=True, allow_from_autoenv=False, help="Enable verbose logging."
 )
 @click.option(
-    "--queues", '-q', multiple=True
+    "--queues", '-q', multiple=True, allow_from_autoenv=False, help="what celery queues to monitor"
 )
 @click.version_option(version=".".join([str(x) for x in __VERSION__]))
 def main(
