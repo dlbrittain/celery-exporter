@@ -21,6 +21,7 @@ class CeleryExporter:
         namespace="celery",
         transport_options=None,
         enable_events=False,
+        queues=["process"]
     ):
         self._listen_address = listen_address
         self._max_tasks = max_tasks
@@ -29,7 +30,7 @@ class CeleryExporter:
 
         self._app = celery.Celery(broker=broker_url)
         self._app.conf.broker_transport_options = transport_options or {}
-
+        self.queues=queues
     def start(self):
 
         setup_metrics(self._app, self._namespace)
@@ -53,7 +54,7 @@ class CeleryExporter:
             e.daemon = True
             e.start()
 
-        q = QueueLengthMonitoringThread(app=self._app, queue_list=['process', 'default', 'celery'])
+        q = QueueLengthMonitoringThread(app=self._app, queue_list=self.queues)
         q.daemon = True
         q.start()
 

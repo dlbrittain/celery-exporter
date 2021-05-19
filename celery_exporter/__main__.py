@@ -68,6 +68,9 @@ LOG_FORMAT = "[%(asctime)s] %(name)s:%(levelname)s: %(message)s"
 @click.option(
     "--verbose", is_flag=True, allow_from_autoenv=False, help="Enable verbose logging."
 )
+@click.option(
+    "--queues", '-q', multiple=True
+)
 @click.version_option(version=".".join([str(x) for x in __VERSION__]))
 def main(
     broker_url,
@@ -78,6 +81,7 @@ def main(
     enable_events,
     tz,
     verbose,
+    queues
 ):  # pragma: no cover
 
     if verbose:
@@ -108,6 +112,7 @@ def main(
         namespace,
         transport_options,
         enable_events,
+        queues
     )
     celery_exporter.start()
 
